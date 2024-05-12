@@ -55,7 +55,7 @@ export class UserService {
 
       const accessToken = this.generateAccessToken(user);
 
-      res.json({ accessToken });
+      res.status(201).json({ accessToken });
     } catch (error) {
       res.status(400).send({ error: (error as Error).message });
     }
