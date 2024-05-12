@@ -3,5 +3,6 @@ import UserController from "./app/controllers/UserController";
 
 export const router = Router();
 
-router.post('/users', UserController.create)
+router.post('/users', UserController.signup)
+router.post('/users', UserController.signin)
 

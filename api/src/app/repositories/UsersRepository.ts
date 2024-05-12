@@ -2,15 +2,26 @@ const db = require('../../database');
 
 interface User {
   name: string;
+  email: string;
+  hashedPassword: string;
 }
 
 class UsersRepository {
-  static async create({ name }: User) {
+  static async signup({ name, email, hashedPassword }: User) {
     const [row] = await db.query(`
-      INSERT INTO users(name)
-      VALUES($1)
+      INSERT INTO users(name, email, password)
+      VALUES($1, $2, $3)
       RETURNING *
-      `, [name]);
+      `, [name, email, hashedPassword]);
+    return row;
+  }
+
+  static async validateEmail(email: string) {
+    const [row] = await db.query(`
+      SELECT id
+      FROM USERS
+      WHERE email=$1
+      `, [email]);
     return row;
   }
 }
