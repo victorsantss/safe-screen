@@ -24,6 +24,15 @@ class UsersRepository {
       `, [email]);
     return row;
   }
+
+  static async findUser(email: string) {
+    const [row] = await db.query(`
+      SELECT *
+      FROM USERS
+      WHERE email=$1
+      `, [email]);
+    return row;
+  }
 }
 
 export default UsersRepository;

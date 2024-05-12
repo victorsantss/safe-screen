@@ -1,8 +1,14 @@
 import { Request, Response } from 'express';
 import UsersRepository from '../repositories/UsersRepository';
-import { hash } from 'bcryptjs';
+import { hash, compare } from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
+
+interface User {
+  name: string;
+  email: string;
+  password: string;
+}
 
 export class UserService {
   static async signup(req: Request, res: Response) {
@@ -23,14 +29,36 @@ export class UserService {
 
       const user = await UsersRepository.signup({ name, email, hashedPassword });
 
-      const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET as string);
+      const accessToken = this.generateAccessToken(user);
 
-      res.json(accessToken);
+      res.json({ accessToken });
     } catch (error) {
       res.status(400).send({ error: (error as Error).message });
     }
   }
   static async signin(req: Request, res: Response) {
-    return res.status(200).send({ message: 'test signin ok' });
+    const { email, password } = req.body;
+
+    const user = await UsersRepository.findUser(email);
+
+    if (!user) {
+      return res.status(400).send({ error: 'User not found' });
+    }
+
+    const isPasswordValid = await compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(400).send({ error: 'Invalid Credentials' });
+    }
+
+    const accessToken = this.generateAccessToken(user);
+
+    res.json({ accessToken });
+  }
+
+  private static generateAccessToken(user: User) {
+    const { password, ...userWithoutPassword } = user;
+
+    return jwt.sign(userWithoutPassword, process.env.ACCESS_TOKEN_SECRET as string);
   }
 }
